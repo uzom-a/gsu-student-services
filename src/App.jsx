@@ -11,6 +11,7 @@ import MyBookings from './pages/MyBookings'
 import CreateProfile from './pages/CreateProfile'
 import Dashboard from './pages/Dashboard'
 import AdminQueue from './pages/AdminQueue'
+import CheckEmail from './pages/CheckEmail'
 
 export default function App() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
             <Route path="/create-profile" element={<CreateProfile />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/admin" element={<AdminQueue />} />
+            <Route path="/check-email" element={<CheckEmail />} />
           </Routes>
         </Layout>
       </BrowserRouter>

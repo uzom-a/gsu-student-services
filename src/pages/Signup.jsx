@@ -20,8 +20,7 @@ export default function Signup() {
     setLoading(true)
     try {
       await signUp(form)
-      if (form.role === 'provider') navigate('/create-profile')
-      else navigate('/')
+      navigate('/check-email', { state: { email: form.email } })
     } catch (err) {
       setError(err.message)
     } finally {

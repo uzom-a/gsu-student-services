@@ -31,26 +31,18 @@ export function AuthProvider({ children }) {
   }
 
   async function signUp({ email, password, fullName, role }) {
+    // Store fullName and role in user metadata.
+    // The database trigger will create the profile row automatically
+    // once the user confirms their email.
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: { full_name: fullName, role },
+        emailRedirectTo: `${window.location.origin}/`,
       },
     })
     if (error) throw error
-
-    // Insert profile row — user is now signed in (email confirmation disabled)
-    if (data.user) {
-      const { error: profileError } = await supabase.from('profiles').insert({
-        id: data.user.id,
-        email,
-        full_name: fullName,
-        role,
-      })
-      if (profileError) throw profileError
-    }
-
     return data
   }
 
