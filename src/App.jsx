@@ -12,6 +12,9 @@ import CreateProfile from './pages/CreateProfile'
 import Dashboard from './pages/Dashboard'
 import AdminQueue from './pages/AdminQueue'
 import CheckEmail from './pages/CheckEmail'
+import Messages from './pages/Messages'
+import Conversation from './pages/Conversation'
+import LeaveReview from './pages/LeaveReview'
 
 export default function App() {
   return (
@@ -30,6 +33,9 @@ export default function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/admin" element={<AdminQueue />} />
             <Route path="/check-email" element={<CheckEmail />} />
+            <Route path="/messages" element={<Messages />} />
+            <Route path="/messages/:otherId" element={<Conversation />} />
+            <Route path="/leave-review" element={<LeaveReview />} />
           </Routes>
         </Layout>
       </BrowserRouter>

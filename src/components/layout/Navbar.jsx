@@ -29,6 +29,11 @@ export default function Navbar() {
                 Dashboard
               </Link>
             )}
+            {(profile.role === 'student' || profile.role === 'provider') && (
+              <Link to="/messages" className="text-sm font-medium text-mauve-600 hover:text-blush-600 transition-colors">
+                Messages
+              </Link>
+            )}
             {profile.role === 'admin' && (
               <Link to="/admin" className="text-sm font-medium text-mauve-600 hover:text-blush-600 transition-colors">
                 Admin
