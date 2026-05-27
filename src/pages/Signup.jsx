@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext'
 export default function Signup() {
   const { signUp } = useAuth()
   const navigate = useNavigate()
-  const [form, setForm] = useState({ fullName: '', email: '', password: '', role: 'student' })
+  const [form, setForm] = useState({ fullName: '', email: '', password: '', role: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -15,15 +15,13 @@ export default function Signup() {
 
   async function handleSubmit(e) {
     e.preventDefault()
+    if (!form.role) { setError('Please select if you are a student or provider.'); return }
     setError('')
     setLoading(true)
     try {
       await signUp(form)
-      if (form.role === 'provider') {
-        navigate('/create-profile')
-      } else {
-        navigate('/')
-      }
+      if (form.role === 'provider') navigate('/create-profile')
+      else navigate('/')
     } catch (err) {
       setError(err.message)
     } finally {
@@ -32,23 +30,61 @@ export default function Signup() {
   }
 
   return (
-    <div className="min-h-screen bg-blush-50 flex items-center justify-center px-4">
-      <div className="bg-white rounded-2xl shadow p-8 w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6 text-center">Create your account</h1>
+    <div className="min-h-screen bg-blush-50 flex items-center justify-center px-4 py-12">
+      <div className="bg-white rounded-3xl shadow-sm border border-blush-100 p-8 w-full max-w-md">
+
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="font-heading text-3xl font-bold text-gray-900">Create account</h1>
+          <p className="text-gray-400 text-sm mt-1">Join PrettyBooked 💗</p>
+        </div>
 
         {error && (
-          <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg mb-4">{error}</div>
+          <div className="bg-red-50 text-red-600 text-sm p-3 rounded-xl mb-5 border border-red-100">{error}</div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
+
+          {/* Role selector — shown first so it's obvious */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">I am a…</label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setForm({ ...form, role: 'student' })}
+                className={`py-4 rounded-2xl border-2 font-semibold text-sm transition-all flex flex-col items-center gap-1 ${
+                  form.role === 'student'
+                    ? 'border-blush-500 bg-blush-50 text-blush-600'
+                    : 'border-gray-200 text-gray-500 hover:border-blush-200 bg-white'
+                }`}
+              >
+                <span className="text-2xl">🎓</span>
+                Student
+              </button>
+              <button
+                type="button"
+                onClick={() => setForm({ ...form, role: 'provider' })}
+                className={`py-4 rounded-2xl border-2 font-semibold text-sm transition-all flex flex-col items-center gap-1 ${
+                  form.role === 'provider'
+                    ? 'border-blush-500 bg-blush-50 text-blush-600'
+                    : 'border-gray-200 text-gray-500 hover:border-blush-200 bg-white'
+                }`}
+              >
+                <span className="text-2xl">💅🏾</span>
+                Provider
+              </button>
+            </div>
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Full name</label>
             <input
               name="fullName"
               value={form.fullName}
               onChange={handleChange}
+              placeholder="Your full name"
               required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blush-300"
+              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blush-300"
             />
           </div>
 
@@ -59,8 +95,9 @@ export default function Signup() {
               name="email"
               value={form.email}
               onChange={handleChange}
+              placeholder="you@email.com"
               required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blush-300"
+              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blush-300"
             />
           </div>
 
@@ -71,44 +108,25 @@ export default function Signup() {
               name="password"
               value={form.password}
               onChange={handleChange}
+              placeholder="At least 6 characters"
               required
               minLength={6}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blush-300"
+              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blush-300"
             />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">I am a...</label>
-            <div className="grid grid-cols-2 gap-3">
-              {['student', 'provider'].map((r) => (
-                <button
-                  key={r}
-                  type="button"
-                  onClick={() => setForm({ ...form, role: r })}
-                  className={`py-2 rounded-lg border-2 font-medium capitalize transition-all ${
-                    form.role === r
-                      ? 'border-blush-500 bg-blush-500 text-white'
-                      : 'border-gray-200 text-gray-600 hover:border-blush-300'
-                  }`}
-                >
-                  {r}
-                </button>
-              ))}
-            </div>
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blush-500 text-white py-2.5 rounded-full font-semibold hover:bg-blush-600 disabled:opacity-50 transition-colors"
+            className="w-full bg-black text-white py-3 rounded-full font-semibold hover:bg-gray-800 disabled:opacity-50 transition-colors"
           >
-            {loading ? 'Creating account…' : 'Sign up'}
+            {loading ? 'Creating account…' : 'Create account'}
           </button>
         </form>
 
-        <p className="text-center text-sm text-gray-500 mt-6">
+        <p className="text-center text-sm text-gray-400 mt-6">
           Already have an account?{' '}
-          <Link to="/login" className="text-blush-600 font-medium hover:underline">
+          <Link to="/login" className="text-blush-600 font-semibold hover:underline">
             Log in
           </Link>
         </p>

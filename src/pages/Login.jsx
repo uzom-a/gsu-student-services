@@ -28,15 +28,20 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-blush-50 flex items-center justify-center px-4">
-      <div className="bg-white rounded-2xl shadow p-8 w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6 text-center">Welcome back</h1>
+    <div className="min-h-screen bg-blush-50 flex items-center justify-center px-4 py-12">
+      <div className="bg-white rounded-3xl shadow-sm border border-blush-100 p-8 w-full max-w-md">
+
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="font-heading text-3xl font-bold text-gray-900">Welcome back</h1>
+          <p className="text-gray-400 text-sm mt-1">Sign in to PrettyBooked 💗</p>
+        </div>
 
         {error && (
-          <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg mb-4">{error}</div>
+          <div className="bg-red-50 text-red-600 text-sm p-3 rounded-xl mb-5 border border-red-100">{error}</div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
             <input
@@ -44,8 +49,9 @@ export default function Login() {
               name="email"
               value={form.email}
               onChange={handleChange}
+              placeholder="you@email.com"
               required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blush-300"
+              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blush-300"
             />
           </div>
 
@@ -56,23 +62,24 @@ export default function Login() {
               name="password"
               value={form.password}
               onChange={handleChange}
+              placeholder="Your password"
               required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blush-300"
+              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blush-300"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blush-500 text-white py-2.5 rounded-full font-semibold hover:bg-blush-600 disabled:opacity-50 transition-colors"
+            className="w-full bg-black text-white py-3 rounded-full font-semibold hover:bg-gray-800 disabled:opacity-50 transition-colors"
           >
             {loading ? 'Signing in…' : 'Log in'}
           </button>
         </form>
 
-        <p className="text-center text-sm text-gray-500 mt-6">
+        <p className="text-center text-sm text-gray-400 mt-6">
           Don't have an account?{' '}
-          <Link to="/signup" className="text-blush-600 font-medium hover:underline">
+          <Link to="/signup" className="text-blush-600 font-semibold hover:underline">
             Sign up
           </Link>
         </p>

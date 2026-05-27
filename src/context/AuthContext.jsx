@@ -31,14 +31,26 @@ export function AuthProvider({ children }) {
   }
 
   async function signUp({ email, password, fullName, role }) {
-    const { data, error } = await supabase.auth.signUp({ email, password })
-    if (error) throw error
-    await supabase.from('profiles').insert({
-      id: data.user.id,
+    const { data, error } = await supabase.auth.signUp({
       email,
-      full_name: fullName,
-      role,
+      password,
+      options: {
+        data: { full_name: fullName, role },
+      },
     })
+    if (error) throw error
+
+    // Insert profile row — user is now signed in (email confirmation disabled)
+    if (data.user) {
+      const { error: profileError } = await supabase.from('profiles').insert({
+        id: data.user.id,
+        email,
+        full_name: fullName,
+        role,
+      })
+      if (profileError) throw profileError
+    }
+
     return data
   }
 
