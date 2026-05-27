@@ -19,6 +19,11 @@ export default function Navbar() {
       <div className="flex items-center gap-4">
         {profile ? (
           <>
+            {profile.role === 'student' && (
+              <Link to="/bookings" className="text-sm font-medium text-mauve-600 hover:text-blush-600 transition-colors">
+                My Bookings
+              </Link>
+            )}
             {profile.role === 'provider' && (
               <Link to="/dashboard" className="text-sm font-medium text-mauve-600 hover:text-blush-600 transition-colors">
                 Dashboard

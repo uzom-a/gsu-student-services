@@ -5,6 +5,9 @@ import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Browse from './pages/Browse'
+import ProviderProfile from './pages/ProviderProfile'
+import Book from './pages/Book'
+import MyBookings from './pages/MyBookings'
 import CreateProfile from './pages/CreateProfile'
 import Dashboard from './pages/Dashboard'
 import AdminQueue from './pages/AdminQueue'
@@ -19,6 +22,9 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/browse/:category" element={<Browse />} />
+            <Route path="/provider/:id" element={<ProviderProfile />} />
+            <Route path="/book/:providerId" element={<Book />} />
+            <Route path="/bookings" element={<MyBookings />} />
             <Route path="/create-profile" element={<CreateProfile />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/admin" element={<AdminQueue />} />
