@@ -1,6 +1,6 @@
-# GSU Student Services
+# PrettyBooked
 
-A campus services directory and booking app for Grambling State University students.
+A campus beauty and style booking app for ladies at Grambling State University.
 
 ## Tech Stack
 - **Frontend:** React + Vite + Tailwind CSS
