@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import NotificationBell from './NotificationBell'
 
 export default function Navbar() {
   const { profile, signOut } = useAuth()
@@ -38,6 +39,9 @@ export default function Navbar() {
               <Link to="/admin" className="text-sm font-medium text-mauve-600 hover:text-blush-600 transition-colors">
                 Admin
               </Link>
+            )}
+            {(profile.role === 'student' || profile.role === 'provider') && (
+              <NotificationBell profile={profile} />
             )}
             <button onClick={handleSignOut} className="text-sm font-medium text-gray-400 hover:text-blush-500 transition-colors">
               Sign out
