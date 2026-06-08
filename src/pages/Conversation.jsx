@@ -26,22 +26,31 @@ export default function Conversation() {
       ])
       setOtherUser(other)
       setMessages(msgs || [])
+      markIncomingRead()
     }
     load()
 
-    // Real-time subscription for new messages
+    async function markIncomingRead() {
+      await supabase
+        .from('messages')
+        .update({ is_read: true })
+        .eq('receiver_id', user.id)
+        .eq('sender_id', otherId)
+        .eq('is_read', false)
+    }
+
     const channel = supabase
-      .channel('messages')
+      .channel(`conversation:${user.id}:${otherId}`)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
         table: 'messages',
+        filter: `receiver_id=eq.${user.id}`,
       }, (payload) => {
         const msg = payload.new
-        const isRelevant =
-          (msg.sender_id === user.id && msg.receiver_id === otherId) ||
-          (msg.sender_id === otherId && msg.receiver_id === user.id)
-        if (isRelevant) setMessages((prev) => [...prev, msg])
+        if (msg.sender_id !== otherId) return
+        setMessages((prev) => prev.some((m) => m.id === msg.id) ? prev : [...prev, msg])
+        markIncomingRead()
       })
       .subscribe()
 
@@ -54,14 +63,21 @@ export default function Conversation() {
 
   async function handleSend(e) {
     e.preventDefault()
-    if (!text.trim()) return
+    const content = text.trim()
+    if (!content) return
     setSending(true)
-    await supabase.from('messages').insert({
-      sender_id: user.id,
-      receiver_id: otherId,
-      content: text.trim(),
-    })
     setText('')
+    const tempId = `temp-${Date.now()}`
+    setMessages((prev) => [...prev, { id: tempId, sender_id: user.id, receiver_id: otherId, content, created_at: new Date().toISOString(), is_read: false, pending: true }])
+    const { data, error } = await supabase
+      .from('messages')
+      .insert({ sender_id: user.id, receiver_id: otherId, content })
+      .select()
+      .single()
+    setMessages((prev) => {
+      if (error) return prev.filter((m) => m.id !== tempId)
+      return prev.map((m) => m.id === tempId ? data : m)
+    })
     setSending(false)
   }
 
