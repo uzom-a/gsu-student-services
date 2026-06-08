@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
@@ -8,32 +8,54 @@ export default function Messages() {
   const [conversations, setConversations] = useState([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    async function load() {
-      // Get all messages involving this user
-      const { data } = await supabase
-        .from('messages')
-        .select('*, sender:profiles!messages_sender_id_fkey(id, full_name), receiver:profiles!messages_receiver_id_fkey(id, full_name)')
-        .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
-        .order('created_at', { ascending: false })
+  const load = useCallback(async () => {
+    const { data } = await supabase
+      .from('messages')
+      .select('*, sender:profiles!messages_sender_id_fkey(id, full_name), receiver:profiles!messages_receiver_id_fkey(id, full_name)')
+      .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
+      .order('created_at', { ascending: false })
 
-      if (!data) { setLoading(false); return }
+    if (!data) { setLoading(false); return }
 
-      // Group into conversations by the other person
-      const seen = new Set()
-      const convos = []
-      for (const msg of data) {
-        const other = msg.sender_id === user.id ? msg.receiver : msg.sender
-        if (!seen.has(other.id)) {
-          seen.add(other.id)
-          convos.push({ other, lastMessage: msg })
-        }
+    const groups = new Map()
+    for (const msg of data) {
+      const other = msg.sender_id === user.id ? msg.receiver : msg.sender
+      const existing = groups.get(other.id)
+      if (!existing) {
+        groups.set(other.id, { other, lastMessage: msg, unreadCount: 0 })
       }
-      setConversations(convos)
-      setLoading(false)
+      if (msg.receiver_id === user.id && !msg.is_read) {
+        groups.get(other.id).unreadCount += 1
+      }
     }
-    load()
+    setConversations(Array.from(groups.values()))
+    setLoading(false)
   }, [user.id])
+
+  useEffect(() => {
+    load()
+
+    const channel = supabase
+      .channel(`messages-inbox:${user.id}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'messages', filter: `receiver_id=eq.${user.id}` },
+        () => load(),
+      )
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'messages', filter: `sender_id=eq.${user.id}` },
+        () => load(),
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'messages', filter: `receiver_id=eq.${user.id}` },
+        () => load(),
+      )
+      .subscribe()
+
+    return () => supabase.removeChannel(channel)
+  }, [user.id, load])
 
   return (
     <div className="max-w-2xl mx-auto px-6 py-12">
@@ -49,7 +71,7 @@ export default function Messages() {
       )}
 
       <div className="space-y-3">
-        {conversations.map(({ other, lastMessage }) => (
+        {conversations.map(({ other, lastMessage, unreadCount }) => (
           <Link
             key={other.id}
             to={`/messages/${other.id}`}
@@ -59,12 +81,19 @@ export default function Messages() {
               {other.full_name?.[0]}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-gray-900">{other.full_name}</p>
-              <p className="text-sm text-gray-400 truncate">{lastMessage.content}</p>
+              <p className={`text-gray-900 ${unreadCount > 0 ? 'font-bold' : 'font-semibold'}`}>{other.full_name}</p>
+              <p className={`text-sm truncate ${unreadCount > 0 ? 'text-gray-800 font-medium' : 'text-gray-400'}`}>{lastMessage.content}</p>
             </div>
-            <p className="text-xs text-gray-300 flex-shrink-0">
-              {new Date(lastMessage.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-            </p>
+            <div className="flex flex-col items-end gap-1 flex-shrink-0">
+              <p className="text-xs text-gray-300">
+                {new Date(lastMessage.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              </p>
+              {unreadCount > 0 && (
+                <span className="bg-blush-600 text-white text-[10px] font-semibold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1.5">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </div>
           </Link>
         ))}
       </div>
