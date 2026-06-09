@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { formatDuration } from '../lib/formatDuration'
 
 export default function ProviderProfile() {
   const { id } = useParams()

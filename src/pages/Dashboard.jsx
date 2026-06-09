@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
+import { formatDuration, hoursToMinutes } from '../lib/formatDuration'
 
 const DAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
 const DAY_LABELS = { mon: 'Monday', tue: 'Tuesday', wed: 'Wednesday', thu: 'Thursday', fri: 'Friday', sat: 'Saturday', sun: 'Sunday' }
@@ -22,7 +23,7 @@ export default function Dashboard() {
 
   // Services
   const [services, setServices] = useState([])
-  const [newService, setNewService] = useState({ name: '', price: '', duration_minutes: '' })
+  const [newService, setNewService] = useState({ name: '', price: '', duration_hours: '' })
   const [addingService, setAddingService] = useState(false)
 
   // Availability
@@ -71,10 +72,10 @@ export default function Dashboard() {
       provider_id: providerProfile.id,
       name: newService.name,
       price: parseFloat(newService.price),
-      duration_minutes: parseInt(newService.duration_minutes),
+      duration_minutes: hoursToMinutes(newService.duration_hours),
     }).select().single()
     setServices((prev) => [...prev, data])
-    setNewService({ name: '', price: '', duration_minutes: '' })
+    setNewService({ name: '', price: '', duration_hours: '' })
     setAddingService(false)
   }
 
@@ -114,12 +115,6 @@ export default function Dashboard() {
     <div className="max-w-3xl mx-auto px-6 py-12">
       <h1 className="font-heading text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
       <p className="text-gray-400 text-sm mb-6">Welcome back, {profile?.full_name} 💗</p>
-
-      {!providerProfile?.is_approved && (
-        <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-2xl p-4 mb-6 text-sm">
-          Your profile is pending approval. Bookings will be enabled once you're approved.
-        </div>
-      )}
 
       {/* Tabs */}
       <div className="flex gap-1 bg-blush-50 rounded-2xl p-1 mb-8 border border-blush-100">
@@ -181,7 +176,7 @@ export default function Dashboard() {
               <div key={s.id} className="bg-white rounded-2xl border border-blush-100 shadow-sm px-5 py-4 flex items-center justify-between">
                 <div>
                   <p className="font-medium text-gray-800">{s.name}</p>
-                  <p className="text-sm text-gray-400">{s.duration_minutes} min</p>
+                  <p className="text-sm text-gray-400">{formatDuration(s.duration_minutes)}</p>
                 </div>
                 <div className="flex items-center gap-4">
                   <p className="font-semibold text-blush-600">${s.price}</p>
@@ -212,10 +207,12 @@ export default function Dashboard() {
                 className="border border-blush-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blush-300"
               />
               <input
-                placeholder="Duration (min)"
+                placeholder="Duration (hours)"
                 type="number"
-                value={newService.duration_minutes}
-                onChange={(e) => setNewService({ ...newService, duration_minutes: e.target.value })}
+                step="0.25"
+                min="0.25"
+                value={newService.duration_hours}
+                onChange={(e) => setNewService({ ...newService, duration_hours: e.target.value })}
                 required
                 className="col-span-2 border border-blush-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blush-300"
               />

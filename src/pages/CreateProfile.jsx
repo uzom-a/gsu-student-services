@@ -47,7 +47,6 @@ export default function CreateProfile() {
         category: form.category,
         avatar_url: avatarUrl,
         portfolio_urls: portfolioUrls,
-        is_approved: false,
       })
 
       navigate('/dashboard')

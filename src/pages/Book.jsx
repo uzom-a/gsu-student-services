@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { formatDuration } from '../lib/formatDuration'
 
 const DAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
 
@@ -129,7 +130,7 @@ export default function Book() {
                 >
                   <div>
                     <p className="font-medium text-gray-800">{s.name}</p>
-                    <p className="text-sm text-gray-400">{s.duration_minutes} min</p>
+                    <p className="text-sm text-gray-400">{formatDuration(s.duration_minutes)}</p>
                   </div>
                   <p className="font-semibold text-blush-600">${s.price}</p>
                 </button>
@@ -210,7 +211,7 @@ export default function Book() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Duration</span>
-                <span className="font-medium text-gray-800">{selectedService?.duration_minutes} min</span>
+                <span className="font-medium text-gray-800">{formatDuration(selectedService?.duration_minutes)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Date</span>
