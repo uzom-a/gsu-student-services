@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 
 const AuthContext = createContext({})
@@ -6,6 +6,7 @@ const AuthContext = createContext({})
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
+  const [providerProfile, setProviderProfile] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -18,7 +19,7 @@ export function AuthProvider({ children }) {
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
       if (session?.user) fetchProfile(session.user.id)
-      else { setProfile(null); setLoading(false) }
+      else { setProfile(null); setProviderProfile(null); setLoading(false) }
     })
 
     return () => listener.subscription.unsubscribe()
@@ -27,8 +28,30 @@ export function AuthProvider({ children }) {
   async function fetchProfile(userId) {
     const { data } = await supabase.from('profiles').select('*').eq('id', userId).single()
     setProfile(data)
+    if (data?.role === 'provider') {
+      const { data: pp } = await supabase
+        .from('provider_profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle()
+      setProviderProfile(pp ?? null)
+    } else {
+      setProviderProfile(null)
+    }
     setLoading(false)
   }
+
+  const refreshProviderProfile = useCallback(async () => {
+    if (!user?.id) return
+    const { data } = await supabase
+      .from('provider_profiles')
+      .select('*')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    setProviderProfile(data ?? null)
+  }, [user?.id])
+
+  const needsProviderProfile = profile?.role === 'provider' && !loading && !providerProfile
 
   async function signUp({ email, password, fullName, role }) {
     // Store fullName and role in user metadata.
@@ -56,7 +79,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, profile, providerProfile, needsProviderProfile, loading, signUp, signIn, signOut, refreshProviderProfile }}>
       {children}
     </AuthContext.Provider>
   )

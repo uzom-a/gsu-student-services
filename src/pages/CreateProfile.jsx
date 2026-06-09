@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext'
 const CATEGORIES = ['braider', 'nail-tech', 'lash-tech', 'seamstress']
 
 export default function CreateProfile() {
-  const { user } = useAuth()
+  const { user, refreshProviderProfile } = useAuth()
   const navigate = useNavigate()
   const [form, setForm] = useState({ bio: '', category: 'braider' })
   const [photoFile, setPhotoFile] = useState(null)
@@ -49,6 +49,7 @@ export default function CreateProfile() {
         portfolio_urls: portfolioUrls,
       })
 
+      await refreshProviderProfile()
       navigate('/dashboard')
     } catch (err) {
       setError(err.message)
